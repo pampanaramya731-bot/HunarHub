@@ -74,13 +74,21 @@ function Header({ user, onLogout, cartCount }) {
 }
 
 function Home() {
-  const [products, setProducts] = useState([]);
 
-  useEffect(() => {
-    apiRequest("/products")
-      .then(setProducts)
-      .catch(() => setProducts([]));
-  }, []);
+  const [products, setProducts] = useState([]);
+const [error, setError] = useState("");
+const [message, setMessage] = useState("");
+ useEffect(() => {
+  apiRequest("/products")
+    .then((data) => {
+      setProducts(data);
+      setError("");
+    })
+    .catch((err) => {
+      console.error("Home products error:", err);
+      setError(err.message);
+    });
+}, []);
 
   return (
     <>
@@ -127,16 +135,17 @@ function Home() {
 
       <section className="section soft-section">
         <h2>Featured Products</h2>
+        {error && <p className="error">Error: {error}</p>}
         <div className="product-grid">
           {products.slice(0, 3).map(product => (
             <ProductCard key={product._id} product={product} />
           ))}
         </div>
-        {products.length === 0 && (
-          <p className="muted">
-            No products yet. New products will appear here.
-          </p>
-        )}
+       {products.length === 0 && !error && (
+  <p className="muted">
+    No products yet. New products will appear here.
+  </p>
+)}
         <Link className="text-link" to="/products">View all products →</Link>
       </section>
 
@@ -174,12 +183,16 @@ function Products({ user, addToCart }) {
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
+  
+
+  
   const [message, setMessage] = useState("");
   const [form, setForm] = useState({
     name: "",
     description: "",
     price: "",
     category: "Pottery"
+
   });
 
   async function loadProducts() {
@@ -393,8 +406,10 @@ function ProfilePage({ user }) {
     description: "",
     phone: ""
   });
+
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  
 
   useEffect(() => {
     apiRequest("/entrepreneurs/me")
